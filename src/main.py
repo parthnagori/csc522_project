@@ -6,43 +6,48 @@ from random_forest import run_random_forest
 from logistic import run_logistic_regression
 from xgboostModel import run_xgboost_cornell
 from xgboostModel import run_xgboost_imdb
-
-def fill_nan(df_movie, col):
-    df_movie[col] = df_movie[col].fillna(df_movie[col].median())
+from utils import remove_string_cols
+from utils import classify
+from utils import fill_nan
+from utils import clean_backward_title
 
 def data_prepocessing():
-    df = pd.read_csv('../data/imdb.csv', error_bad_lines=False)
-    df = df[df['year'] > 2000]
-    df_movie = df[df['type'] != 'video.episode']
+    df = pd.read_csv('../data/movie_metadata.csv', error_bad_lines=False)
+    #df = df.fillna(value=0,axis=1)
 
-    cols = list(df_movie.columns)
-    fill_nan(df_movie,cols)
+    cols = list(df.columns)
+    df = fill_nan(df,cols)
 
-    col = list(df_movie.columns)
-    col.remove('type')
-    col = col[5:15]
+    df['movie_title'] = df['movie_title'].astype(str)
+    df['movie_title'] = df['movie_title'].apply(clean_backward_title)
 
+    col = list(df.describe().columns)
     sc = StandardScaler()
-    temp = sc.fit_transform(df_movie[col])
-    # df_movie[col] = temp
-
-    df_standard = df_movie[list(df_movie.describe().columns)]
-    return (df_movie, df_standard)
-
-def classify(row):
-    if row['imdbRating'] >= 0 and row['imdbRating'] < 4:
-        return 0
-    elif row['imdbRating'] >= 4 and row['imdbRating'] < 7:
-        return 1
-    elif row['imdbRating'] >= 7 and row['imdbRating'] <= 10:
-        return 2
+    # sc = MinMaxScaler()
+    temp = sc.fit_transform(df[col])
+    df[col] = temp
+    df_standard = df[list(df.describe().columns)]
+    df_standard.columns
+    return(df, df_standard)
 
 if __name__ == '__main__':
-    df_movie, df_standard = data_prepocessing()
-    run_pca(df_standard, df_movie)
+    df, df_standard = data_prepocessing()
+    run_pca(df_standard, df)
 
-    df_knn = df_movie
+    # remove all irrelevant columns
+    df = df.drop('facenumber_in_poster', 1)
+    df = df.drop('title_year', 1)
+    df = df.drop('aspect_ratio', 1)
+    df = df.drop('duration', 1)
+
+    df_knn = df
+
     df_knn["class"] = df_knn.apply(classify, axis=1)
+    df_knn = df_knn.drop('imdb_score', 1)
+    df_knn = remove_string_cols(df_knn)
+    #cols = list(df_knn.columns)
+    #df_knn = df_knn.fillna(value=df_knn[cols].median(),axis=1)
+    df_knn = df_knn.fillna(value=0,axis=1)
     run_knn(df_knn)
 
     run_logistic_regression()

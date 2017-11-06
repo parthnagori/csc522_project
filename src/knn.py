@@ -1,7 +1,7 @@
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import cross_val_score
-from split_dataset import split_train_test
+from utils import split_train_test
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -25,6 +25,7 @@ def run_knn(df_knn):
         knn = KNeighborsClassifier(n_neighbors = k)
         scores = cross_val_score(knn, x_train, y_train, cv=10, scoring='accuracy')
         cv_scores.append(scores.mean())
+        print("Neighbors = ",k," , Mean score = ",scores.mean())
 
     MSE = [1 - x for x in cv_scores]
     optimal_k = neighbors[MSE.index(min(MSE))]

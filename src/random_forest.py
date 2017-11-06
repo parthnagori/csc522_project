@@ -1,7 +1,7 @@
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
-from split_dataset import split_train_test
+from utils import split_train_test
 import numpy as np
 import matplotlib.pyplot as plt
 
