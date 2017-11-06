@@ -50,6 +50,8 @@ if __name__ == '__main__':
     df_knn = df_knn.fillna(value=0,axis=1)
     run_knn(df_knn)
 
+    run_random_forest(df_knn)
+
     run_logistic_regression()
 
     run_xgboost_cornell()
